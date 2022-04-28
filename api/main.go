@@ -15,6 +15,11 @@ import (
 	"time"
 )
 
+const (
+	EnvHostKey = "TEMPORAL_HOST"
+	EnvPortKey = "TEMPORAL_PORT"
+)
+
 type (
 	ErrorResponse struct {
 		Message string
@@ -35,8 +40,26 @@ var (
 )
 
 func main() {
+
+	host := os.Getenv(EnvHostKey)
+	if host == "" {
+		host = "127.0.0.1"
+	}
+
+	port := os.Getenv(EnvPortKey)
+	if port == "" {
+		port = "7233"
+	}
+
+	hostPort := fmt.Sprintf("%s:%s", host, port)
+	log.Printf("connecting to temporal: %s\n", hostPort)
+
 	var err error
-	temporal, err = client.NewClient(client.Options{})
+	temporal, err = client.NewClient(
+		client.Options{
+			HostPort: hostPort,
+		},
+	)
 	if err != nil {
 		log.Fatalln("unable to create Temporal client", err)
 	}

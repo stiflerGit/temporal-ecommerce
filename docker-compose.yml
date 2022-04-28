@@ -1,0 +1,108 @@
+version: "3.5"
+
+services:
+  postgresql:
+    container_name: temporal-postgresql
+    environment:
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_USER: temporal
+    image: postgres:${POSTGRESQL_VERSION}
+    networks:
+      - temporal-network
+    ports:
+      - "5432:5432"
+
+  temporal:
+    container_name: temporal
+    depends_on:
+      - postgresql
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgresql
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development_sql.yaml
+    image: temporalio/auto-setup:${TEMPORAL_VERSION}
+    networks:
+      - temporal-network
+    ports:
+      - "7233:7233"
+    volumes:
+      - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+
+  # temporal-admin-tools:
+  #   container_name: temporal-admin-tools
+  #   depends_on:
+  #     - temporal
+  #   environment:
+  #     - TEMPORAL_CLI_ADDRESS=temporal:7233
+  #   image: temporalio/admin-tools:${TEMPORAL_VERSION}
+  #   networks:
+  #     - temporal-network
+  #   stdin_open: true
+  #   tty: true
+  
+  temporal-web:
+    container_name: temporal-web
+    depends_on:
+      - temporal
+    environment:
+      - TEMPORAL_GRPC_ENDPOINT=temporal:7233
+      - TEMPORAL_PERMIT_WRITE_API=true
+    image: temporalio/web:${TEMPORAL_WEB_VERSION}
+    networks:
+      - temporal-network
+    ports:
+      - "8088:8088"
+
+  worker:
+    container_name: worker
+    depends_on:
+      - temporal
+    networks:
+      - temporal-network
+    volumes:
+      - ./.:/go/src/temporal-ecommerce
+    environment:
+      - TEMPORAL_HOST=temporal
+      - TEMPORAL_PORT=7233
+    image: golang:1.18-alpine
+    command: sh -c 'cd /go/src/temporal-ecommerce && go run worker/main.go'
+
+  api-server:
+    container_name: api-server
+    depends_on:
+      - temporal
+      - worker
+    networks:
+      - temporal-network
+    volumes:
+      - ./.:/go/src/temporal-ecommerce
+    environment:
+      - TEMPORAL_HOST=temporal
+      - TEMPORAL_PORT=7233
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    image: golang:1.18-alpine
+    command: sh -c 'cd /go/src/temporal-ecommerce && go run api/main.go'
+
+  frontend:
+    container_name: frontend
+    depends_on:
+      - api-server
+    networks:
+      - temporal-network
+    volumes:
+      - ./frontend:/npm
+    ports:
+      - "8080:8080"
+    image: node:16-alpine
+    command: sh -c 'cd /npm && npm install && npm run serve'
+
+networks:
+  temporal-network:
+    driver: bridge
+    name: temporal-network
+
