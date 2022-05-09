@@ -52,7 +52,7 @@ curl -X POST http://localhost:3000/cart
 #  "workflowID":"CART-1619483151"}
 
 # add item
-curl -X PUT -d '{"ProductId":3,"Quantity":1}' -H 'Content-Type: application/json' http://localhost:3000/cart/CART-1619483151/4a4436be-3307-42ea-a9ab-3b63f5520bee/add
+curl -X PUT -d '{"ProductId":3,"Quantity":1}' -H 'Content-Type: application/json' http://localhost:3000/cart/CART-1619483151/add
 
 # response: {"ok":1}
 
