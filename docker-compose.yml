@@ -88,19 +88,6 @@ services:
     image: golang:1.18-alpine
     command: sh -c 'cd /go/src/temporal-ecommerce && go run api/main.go'
 
-  frontend:
-    container_name: frontend
-    depends_on:
-      - api-server
-    networks:
-      - temporal-network
-    volumes:
-      - ./frontend:/npm
-    ports:
-      - "8080:8080"
-    image: node:16-alpine
-    command: sh -c 'cd /npm && npm install && npm run serve'
-
 networks:
   temporal-network:
     driver: bridge
