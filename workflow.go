@@ -175,4 +175,5 @@ func (state *CartState) RemoveFromCart(item CartItem) {
 		break
 	}
 }
+
 // @@@SNIPEND

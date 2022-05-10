@@ -31,18 +31,7 @@ services:
     volumes:
       - ./dynamicconfig:/etc/temporal/config/dynamicconfig
 
-  # temporal-admin-tools:
-  #   container_name: temporal-admin-tools
-  #   depends_on:
-  #     - temporal
-  #   environment:
-  #     - TEMPORAL_CLI_ADDRESS=temporal:7233
-  #   image: temporalio/admin-tools:${TEMPORAL_VERSION}
-  #   networks:
-  #     - temporal-network
-  #   stdin_open: true
-  #   tty: true
-  
+
   temporal-web:
     container_name: temporal-web
     depends_on:
