@@ -63,6 +63,8 @@ func CartWorkflow(ctx workflow.Context, state CartState) error {
 			}
 
 			state.AddToCart(message.Item)
+
+			sentAbandonedCartEmail = false
 		})
 
 		selector.AddReceive(removeFromCartChannel, func(c workflow.ReceiveChannel, _ bool) {
@@ -77,6 +79,8 @@ func CartWorkflow(ctx workflow.Context, state CartState) error {
 			}
 
 			state.RemoveFromCart(message.Item)
+
+			sentAbandonedCartEmail = false
 		})
 
 		selector.AddReceive(updateCartChannel, func(c workflow.ReceiveChannel, _ bool) {
